@@ -1,113 +1,106 @@
 # QueueStorm Investigator API
 
-A Python FastAPI solution for the **SUST CSE Carnival 2026 · Codex Community Hackathon · QueueStorm Investigator** preliminary round.
+This is our preliminary round submission for **SUST CSE Carnival 2026 - Codex Community Hackathon**.
 
-The API classifies and investigates fintech support tickets using:
+The project is a small FastAPI service that analyzes customer support tickets for a digital finance platform. It reads the complaint and the given transaction history, then returns a structured JSON response for support agents.
 
-1. deterministic rule-based case classification,
-2. transaction-history evidence matching,
-3. strict enum-safe JSON output,
-4. safety guardrails against credential requests and unauthorized refund promises,
-5. optional free-tier Gemini polishing for text fields only.
+Live URL:
 
-The deterministic engine is the source of truth. The LLM never decides schema-critical fields.
+```txt
+https://sust-hackathon-2-k26-8238.vercel.app
+```
+
+GitHub Repository:
+
+```txt
+https://github.com/NuhashMaq/SUST_HACKATHON_2K26
+```
 
 ---
 
-## API Endpoints
+## Endpoints
 
-### `GET /health`
+### Health Check
 
-Returns:
+```http
+GET /health
+```
+
+Response:
 
 ```json
-{"status": "ok"}
+{
+  "status": "ok"
+}
 ```
 
-### `POST /analyze-ticket`
+### Analyze Ticket
 
-Accepts one support ticket and returns one structured analysis object.
-
----
-
-## Tech Stack
-
-- Python 3.11+
-- FastAPI
-- Pydantic
-- Uvicorn
-- httpx for optional Gemini API calls
-- Vercel Python Functions for deployment
-
----
-
-## Project Structure
-
-```txt
-queue-storm-investigator/
-├── src/
-│   ├── __init__.py
-│   ├── index.py          # FastAPI app and endpoints
-│   ├── models.py         # Request/response schemas and enums
-│   ├── analyzer.py       # Rule-based classifier and evidence engine
-│   ├── safety.py         # Safety filters and safe templates
-│   └── llm.py            # Optional Gemini text polishing
-├── tests/
-│   ├── generate_sample_output.py
-│   ├── smoke_test.py
-│   └── test_samples.py
-├── sample_cases.json
-├── sample_output.json
-├── requirements.txt
-├── vercel.json
-├── Dockerfile
-├── .env.example
-└── README.md
+```http
+POST /analyze-ticket
 ```
 
+This endpoint accepts one support ticket and returns the case analysis.
+
 ---
 
-## How the Analysis Works
+## Example Request
 
-The API follows this pipeline:
+```json
+{
+  "ticket_id": "TKT-TEST-001",
+  "complaint": "Someone called me and asked for my OTP saying my account will be blocked.",
+  "language": "en",
+  "channel": "call_center",
+  "user_type": "customer",
+  "transaction_history": []
+}
+```
 
-```txt
-Validate input
-→ Normalize complaint text
-→ Extract amounts and phone-like tokens
-→ Detect case_type
-→ Match relevant transaction from history
-→ Decide evidence_verdict
-→ Assign department and severity
-→ Decide human_review_required
-→ Generate safe support texts
-→ Optional Gemini polish of text fields
-→ Final safety check
-→ Return strict JSON
+## Example Response
+
+```json
+{
+  "ticket_id": "TKT-TEST-001",
+  "relevant_transaction_id": null,
+  "evidence_verdict": "insufficient_data",
+  "case_type": "phishing_or_social_engineering",
+  "severity": "critical",
+  "department": "fraud_risk",
+  "agent_summary": "Customer reports a possible phishing or social engineering attempt involving credentials or account access.",
+  "recommended_next_action": "Escalate to fraud_risk immediately. Confirm that official support never asks for PIN, OTP, or password.",
+  "customer_reply": "Thank you for reaching out before sharing any information. We never ask for your PIN, OTP, or password under any circumstances. Please do not share these with anyone, even if they claim to be from us. Our fraud team has been notified.",
+  "human_review_required": true,
+  "confidence": 0.95,
+  "reason_codes": [
+    "phishing",
+    "credential_protection",
+    "critical_escalation"
+  ]
+}
 ```
 
 ---
 
-## Evidence Reasoning Logic
+## What the API Does
 
-The service returns one of:
+The API identifies:
 
-- `consistent`: transaction history supports the complaint.
-- `inconsistent`: transaction history contradicts the complaint.
-- `insufficient_data`: there is not enough evidence or multiple plausible transactions exist.
+* relevant transaction ID
+* evidence verdict
+* case type
+* severity
+* responsible department
+* human review requirement
+* agent summary
+* recommended next step
+* safe customer reply
 
-Examples:
-
-- Wrong transfer + matching completed transfer = `consistent`
-- Wrong transfer claim + repeated transfers to same recipient = `inconsistent`
-- Multiple possible same-amount transfers = `insufficient_data`
-- Phishing/OTP report with no transaction = `insufficient_data` but `critical`
+The important part is that it does not only classify the complaint. It also checks the transaction history before making a decision.
 
 ---
 
 ## Supported Case Types
-
-Exact enum values used:
 
 ```txt
 wrong_transfer
@@ -122,40 +115,51 @@ other
 
 ---
 
-## Department Mapping
+## Evidence Verdicts
 
 ```txt
-wrong_transfer                  → dispute_resolution
-payment_failed                  → payments_ops
-refund_request                  → customer_support
-duplicate_payment               → payments_ops
-merchant_settlement_delay       → merchant_operations
-agent_cash_in_issue             → agent_operations
-phishing_or_social_engineering  → fraud_risk
-other                           → customer_support
+consistent
+inconsistent
+insufficient_data
 ```
+
+`consistent` means the transaction history supports the complaint.
+
+`inconsistent` means the transaction history does not fully support the complaint.
+
+`insufficient_data` means the given data is not enough to decide safely.
 
 ---
 
-## Safety Guardrails
+## Department Routing
 
-The API must never:
+| Case Type                      | Department          |
+| ------------------------------ | ------------------- |
+| wrong_transfer                 | dispute_resolution  |
+| payment_failed                 | payments_ops        |
+| refund_request                 | customer_support    |
+| duplicate_payment              | payments_ops        |
+| merchant_settlement_delay      | merchant_operations |
+| agent_cash_in_issue            | agent_operations    |
+| phishing_or_social_engineering | fraud_risk          |
+| other                          | customer_support    |
 
-- ask for PIN,
-- ask for OTP,
-- ask for password,
-- ask for full card number,
-- promise a refund,
-- promise a reversal,
-- tell the customer to contact a suspicious third party.
+---
 
-Safe wording is used instead:
+## Safety Rules
+
+The customer reply is generated with safety in mind.
+
+The API never asks for:
 
 ```txt
-Please do not share your PIN, OTP, or password with anyone.
+PIN
+OTP
+password
+full card number
 ```
 
-and:
+It also does not promise refunds, reversals, account recovery, or unblocking. Instead, it uses safe wording such as:
 
 ```txt
 Any eligible amount will be returned through official channels.
@@ -163,243 +167,188 @@ Any eligible amount will be returned through official channels.
 
 ---
 
-## Models Used
-
-### Default mode
-
-No external LLM is required. The default is deterministic rule-based reasoning.
+## Tech Stack
 
 ```txt
+Python
+FastAPI
+Pydantic
+Uvicorn
+Vercel
+```
+
+The main decision system is rule-based. I kept it deterministic because the judge checks strict enum values, safety rules, and evidence reasoning.
+
+---
+
+## Models Used
+
+By default, this project does not depend on any external LLM.
+
+```env
 LLM_MODE=off
 ```
 
-Reason for default rule-based mode:
+The core logic is handled by rule-based classification, transaction matching, and safety templates.
 
-- low latency,
-- no API key dependency,
-- exact enum control,
-- no hallucinated refund promises,
-- reliable hidden-test behavior.
+There is optional Gemini support in the code for text polishing only:
 
-### Optional free LLM mode
-
-The project supports optional Google Gemini API text polishing:
-
-```txt
+```env
 LLM_MODE=gemini
-GEMINI_API_KEY=your_key
+GEMINI_API_KEY=your_key_here
 GEMINI_MODEL=gemini-2.5-flash-lite
 ```
 
-Important: Gemini is used only to polish:
+The LLM does not control important fields like `case_type`, `department`, `evidence_verdict`, or `relevant_transaction_id`.
 
-- `agent_summary`,
-- `recommended_next_action`,
-- `customer_reply`.
+For the deployed version, the recommended setting is:
 
-It does **not** choose:
-
-- `case_type`,
-- `department`,
-- `severity`,
-- `evidence_verdict`,
-- `relevant_transaction_id`,
-- `human_review_required`.
-
-If Gemini fails or times out, the API returns the safe rule-based response.
+```env
+LLM_MODE=off
+```
 
 ---
 
-## Local Setup
+## Project Structure
+
+```txt
+.
+├── api/
+│   └── index.py
+├── src/
+│   ├── index.py
+│   ├── models.py
+│   ├── analyzer.py
+│   ├── safety.py
+│   ├── llm.py
+│   └── utils.py
+├── tests/
+│   ├── test_samples.py
+│   ├── smoke_test.py
+│   └── generate_sample_output.py
+├── sample_cases.json
+├── sample_output.json
+├── requirements.txt
+├── vercel.json
+├── README.md
+├── RUNBOOK.md
+└── .env.example
+```
+
+---
+
+## Local Run
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+```
+
+Windows PowerShell:
+
+```powershell
+.venv\Scripts\activate
+```
+
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
-uvicorn src.index:app --reload
 ```
 
-Then test:
-
-```bash
-curl http://localhost:8000/health
-```
-
-Expected:
-
-```json
-{"status":"ok"}
-```
-
----
-
-## Example Request
-
-```bash
-curl -X POST http://localhost:8000/analyze-ticket \
-  -H "Content-Type: application/json" \
-  -d '{
-    "ticket_id": "TKT-DEMO-001",
-    "complaint": "I paid my electricity bill 850 taka but it deducted twice from my account.",
-    "language": "en",
-    "channel": "in_app_chat",
-    "user_type": "customer",
-    "transaction_history": [
-      {
-        "transaction_id": "TXN-A",
-        "timestamp": "2026-04-14T08:15:30Z",
-        "type": "payment",
-        "amount": 850,
-        "counterparty": "BILLER-DESCO",
-        "status": "completed"
-      },
-      {
-        "transaction_id": "TXN-B",
-        "timestamp": "2026-04-14T08:15:42Z",
-        "type": "payment",
-        "amount": 850,
-        "counterparty": "BILLER-DESCO",
-        "status": "completed"
-      }
-    ]
-  }'
-```
-
----
-
-## Test Public Sample Cases
-
-First run the API:
+Run server:
 
 ```bash
 uvicorn src.index:app --reload
 ```
 
-Then in another terminal:
+Health check:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+API docs:
+
+```txt
+http://127.0.0.1:8000/docs
+```
+
+---
+
+## Testing
+
+Run sample tests locally:
 
 ```bash
 python tests/test_samples.py
 ```
 
-Generate the required sample output file:
+Run sample tests against deployed API:
 
 ```bash
-python tests/generate_sample_output.py
+python tests/test_samples.py https://sust-hackathon-2-k26-8238.vercel.app
 ```
 
-This writes:
+Expected result:
 
 ```txt
-sample_output.json
+Core exact matches: 10/10
 ```
 
 ---
 
-## Vercel Deployment
+## Deployment
 
-### 1. Install Vercel CLI
+The project is deployed on Vercel without Docker.
 
-```bash
-npm install -g vercel
+Current `vercel.json`:
+
+```json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.py"
+    }
+  ]
+}
 ```
 
-### 2. Login
-
-```bash
-vercel login
-```
-
-### 3. Deploy preview
-
-```bash
-vercel
-```
-
-### 4. Deploy production
-
-```bash
-vercel --prod
-```
-
-After deployment, test:
-
-```bash
-curl https://your-project.vercel.app/health
-```
-
-and:
-
-```bash
-curl -X POST https://your-project.vercel.app/analyze-ticket \
-  -H "Content-Type: application/json" \
-  -d @your_test_payload.json
-```
-
----
-
-## Vercel Environment Variables
-
-Default recommended deployment:
+The Vercel entry file is:
 
 ```txt
-LLM_MODE=off
+api/index.py
 ```
 
-Optional Gemini mode:
+It imports the FastAPI app from:
 
 ```txt
-LLM_MODE=gemini
-GEMINI_API_KEY=your_google_ai_studio_api_key
-GEMINI_MODEL=gemini-2.5-flash-lite
+src/index.py
 ```
-
-Add these from:
-
-```txt
-Vercel Project Dashboard → Settings → Environment Variables
-```
-
----
-
-## Docker Run
-
-```bash
-docker build -t queuestorm-investigator .
-docker run -p 8000:8000 queuestorm-investigator
-```
-
----
-
-## Assumptions
-
-- Input data is synthetic.
-- No real financial action is performed.
-- The API is an internal support copilot, not an autonomous decision maker.
-- When evidence is ambiguous, the API returns `insufficient_data` rather than guessing.
-- Human review is used for disputes, phishing, duplicate payment, agent cash-in issues, inconsistent evidence, and high-risk cases.
 
 ---
 
 ## Known Limitations
 
-- Rule-based keyword detection may miss unusual phrasing.
-- Bangla/Banglish coverage is useful but not exhaustive.
-- Time matching is basic; amount/type/status matching is prioritized.
-- Optional LLM mode depends on third-party free-tier availability and quota.
-- The system does not connect to real payment ledgers or customer identity systems.
+* The system is rule-based, so unusual wording may not always be classified perfectly.
+* It only uses the transaction history provided in the request.
+* It does not connect to any real payment system.
+* It does not perform actual refunds, reversals, settlements, or account actions.
+* If evidence is unclear, it avoids guessing and returns `insufficient_data`.
 
 ---
 
-## Submission Checklist
+## Submission
 
-- [x] `GET /health`
-- [x] `POST /analyze-ticket`
-- [x] Strict response schema
-- [x] Safety guardrails
-- [x] Evidence reasoning
-- [x] `requirements.txt`
-- [x] `vercel.json`
-- [x] `.env.example`
-- [x] `Dockerfile`
-- [x] `README.md`
-- [x] `sample_output.json`
+Live URL:
+
+```txt
+https://sust-hackathon-2-k26-8238.vercel.app
+```
+
+Repository:
+
+```txt
+https://github.com/NuhashMaq/SUST_HACKATHON_2K26
+```
