@@ -1,0 +1,220 @@
+{
+  "outputs": [
+    {
+      "id": "SAMPLE-01",
+      "label": "Wrong transfer with matching evidence",
+      "output": {
+        "ticket_id": "TKT-001",
+        "relevant_transaction_id": "TXN-9101",
+        "evidence_verdict": "consistent",
+        "case_type": "wrong_transfer",
+        "severity": "high",
+        "department": "dispute_resolution",
+        "agent_summary": "Customer reports a possible wrong transfer of 5000 BDT via TXN-9101 to +8801719876543. Evidence verdict: consistent.",
+        "recommended_next_action": "Verify TXN-9101 details with the customer and initiate the wrong-transfer dispute workflow per policy.",
+        "customer_reply": "We have noted your concern about transaction TXN-9101. Our team will review the case and contact you through official support channels. Please do not share your PIN or OTP with anyone.",
+        "human_review_required": true,
+        "confidence": 0.9,
+        "reason_codes": [
+          "wrong_transfer",
+          "transaction_match",
+          "evidence_consistent"
+        ]
+      }
+    },
+    {
+      "id": "SAMPLE-02",
+      "label": "Wrong transfer claim with inconsistent evidence",
+      "output": {
+        "ticket_id": "TKT-002",
+        "relevant_transaction_id": "TXN-9202",
+        "evidence_verdict": "inconsistent",
+        "case_type": "wrong_transfer",
+        "severity": "medium",
+        "department": "dispute_resolution",
+        "agent_summary": "Customer reports a possible wrong transfer of 2000 BDT via TXN-9202 to +8801812345678. Evidence verdict: inconsistent.",
+        "recommended_next_action": "Flag TXN-9202 for human review and verify the customer's claim against transaction history before taking action.",
+        "customer_reply": "We have noted your concern about transaction TXN-9202. Our team will review the case and contact you through official support channels. Please do not share your PIN or OTP with anyone.",
+        "human_review_required": true,
+        "confidence": 0.75,
+        "reason_codes": [
+          "wrong_transfer",
+          "transaction_match",
+          "evidence_inconsistent"
+        ]
+      }
+    },
+    {
+      "id": "SAMPLE-03",
+      "label": "Failed payment with balance deducted",
+      "output": {
+        "ticket_id": "TKT-003",
+        "relevant_transaction_id": "TXN-9301",
+        "evidence_verdict": "consistent",
+        "case_type": "payment_failed",
+        "severity": "high",
+        "department": "payments_ops",
+        "agent_summary": "Customer reports failed payment or deducted balance for 1200 BDT via TXN-9301. Transaction status is failed.",
+        "recommended_next_action": "Investigate TXN-9301 ledger status. If balance was deducted on a failed payment, process according to the standard reversal workflow.",
+        "customer_reply": "We have noted that transaction TXN-9301 may have caused an unexpected balance deduction. Our payments team will review the case and any eligible amount will be returned through official channels. Please do not share your PIN or OTP with anyone.",
+        "human_review_required": false,
+        "confidence": 0.9,
+        "reason_codes": [
+          "payment_failed",
+          "transaction_match",
+          "evidence_consistent"
+        ]
+      }
+    },
+    {
+      "id": "SAMPLE-04",
+      "label": "Refund request requiring safe handling",
+      "output": {
+        "ticket_id": "TKT-004",
+        "relevant_transaction_id": "TXN-9401",
+        "evidence_verdict": "consistent",
+        "case_type": "refund_request",
+        "severity": "low",
+        "department": "customer_support",
+        "agent_summary": "Customer requests refund related to TXN-9401 for 500 BDT. Refund eligibility requires policy review.",
+        "recommended_next_action": "Review refund eligibility for TXN-9401 according to merchant or service policy without promising a refund before approval.",
+        "customer_reply": "We have received your request regarding TXN-9401. Refund eligibility depends on the applicable merchant or service policy. Our team will guide you through official support channels. Please do not share your PIN or OTP with anyone.",
+        "human_review_required": false,
+        "confidence": 0.9,
+        "reason_codes": [
+          "refund_request",
+          "transaction_match",
+          "evidence_consistent"
+        ]
+      }
+    },
+    {
+      "id": "SAMPLE-05",
+      "label": "Phishing or social engineering report",
+      "output": {
+        "ticket_id": "TKT-005",
+        "relevant_transaction_id": null,
+        "evidence_verdict": "insufficient_data",
+        "case_type": "phishing_or_social_engineering",
+        "severity": "critical",
+        "department": "fraud_risk",
+        "agent_summary": "Customer reports a suspicious message or call asking for sensitive credentials. Likely social engineering attempt.",
+        "recommended_next_action": "Escalate to fraud_risk immediately, log reported suspicious details, and remind the customer that official support never asks for PIN, OTP, or password.",
+        "customer_reply": "Thank you for reaching out before sharing any information. We never ask for your PIN, OTP, or password under any circumstances. Please do not share these with anyone, even if they claim to be from us. Our fraud team has been notified.",
+        "human_review_required": true,
+        "confidence": 0.95,
+        "reason_codes": [
+          "phishing",
+          "credential_protection",
+          "critical_escalation"
+        ]
+      }
+    },
+    {
+      "id": "SAMPLE-06",
+      "label": "Vague complaint, insufficient evidence",
+      "output": {
+        "ticket_id": "TKT-006",
+        "relevant_transaction_id": null,
+        "evidence_verdict": "insufficient_data",
+        "case_type": "other",
+        "severity": "low",
+        "department": "customer_support",
+        "agent_summary": "Customer reports a vague or uncategorized money-related issue. More details are needed before a specific transaction can be identified.",
+        "recommended_next_action": "Ask the customer for the transaction ID, amount, counterparty, and approximate time before initiating any dispute or operational workflow.",
+        "customer_reply": "Thank you for reaching out. To help you faster, please share the transaction ID, amount involved, counterparty, and approximate time. Please do not share your PIN or OTP with anyone.",
+        "human_review_required": false,
+        "confidence": 0.6,
+        "reason_codes": [
+          "no_relevant_transaction"
+        ]
+      }
+    },
+    {
+      "id": "SAMPLE-07",
+      "label": "Agent cash-in issue, Bangla complaint",
+      "output": {
+        "ticket_id": "TKT-007",
+        "relevant_transaction_id": "TXN-9701",
+        "evidence_verdict": "consistent",
+        "case_type": "agent_cash_in_issue",
+        "severity": "high",
+        "department": "agent_operations",
+        "agent_summary": "Customer reports cash-in not reflected in balance. TXN-9701 is a pending cash-in via AGENT-318.",
+        "recommended_next_action": "Investigate TXN-9701 with agent_operations and confirm settlement state under the standard cash-in SLA.",
+        "customer_reply": "আপনার লেনদেন TXN-9701 এর বিষয়ে আমরা অবগত হয়েছি। আমাদের সংশ্লিষ্ট দল এটি অফিসিয়াল চ্যানেলের মাধ্যমে যাচাই করবে। অনুগ্রহ করে কারো সাথে আপনার পিন, ওটিপি বা পাসওয়ার্ড শেয়ার করবেন না।",
+        "human_review_required": true,
+        "confidence": 0.9,
+        "reason_codes": [
+          "agent_cash_in_issue",
+          "transaction_match",
+          "evidence_consistent"
+        ]
+      }
+    },
+    {
+      "id": "SAMPLE-08",
+      "label": "Multiple plausible transactions, ambiguous match",
+      "output": {
+        "ticket_id": "TKT-008",
+        "relevant_transaction_id": null,
+        "evidence_verdict": "insufficient_data",
+        "case_type": "wrong_transfer",
+        "severity": "medium",
+        "department": "dispute_resolution",
+        "agent_summary": "Customer reports a wrong transfer involving 1000 BDT, but no single matching transaction can be confirmed from the provided history.",
+        "recommended_next_action": "Ask the customer for the transaction ID, amount, counterparty, and approximate time before initiating any dispute or operational workflow.",
+        "customer_reply": "Thank you for reaching out. To help you faster, please share the transaction ID, amount involved, counterparty, and approximate time. Please do not share your PIN or OTP with anyone.",
+        "human_review_required": false,
+        "confidence": 0.6,
+        "reason_codes": [
+          "ambiguous_match",
+          "needs_clarification"
+        ]
+      }
+    },
+    {
+      "id": "SAMPLE-09",
+      "label": "Merchant settlement delay",
+      "output": {
+        "ticket_id": "TKT-009",
+        "relevant_transaction_id": "TXN-9901",
+        "evidence_verdict": "consistent",
+        "case_type": "merchant_settlement_delay",
+        "severity": "medium",
+        "department": "merchant_operations",
+        "agent_summary": "Merchant reports delayed settlement of 15000 BDT via TXN-9901. Settlement status is pending.",
+        "recommended_next_action": "Route TXN-9901 to merchant_operations to verify settlement batch status and communicate an official ETA.",
+        "customer_reply": "We have noted your concern about settlement TXN-9901. Our merchant operations team will check the batch status and update you through official channels.",
+        "human_review_required": false,
+        "confidence": 0.9,
+        "reason_codes": [
+          "merchant_settlement_delay",
+          "transaction_match",
+          "evidence_consistent"
+        ]
+      }
+    },
+    {
+      "id": "SAMPLE-10",
+      "label": "Duplicate payment claim",
+      "output": {
+        "ticket_id": "TKT-010",
+        "relevant_transaction_id": "TXN-10002",
+        "evidence_verdict": "consistent",
+        "case_type": "duplicate_payment",
+        "severity": "high",
+        "department": "payments_ops",
+        "agent_summary": "Customer reports a duplicate payment. TXN-10002 is the suspected duplicate transaction.",
+        "recommended_next_action": "Verify the suspected duplicate TXN-10002 with payments_ops and biller records before any eligible reversal is processed.",
+        "customer_reply": "We have noted the possible duplicate payment for transaction TXN-10002. Our payments team will verify it through official records and any eligible amount will be returned through official channels. Please do not share your PIN or OTP with anyone.",
+        "human_review_required": true,
+        "confidence": 0.9,
+        "reason_codes": [
+          "duplicate_payment",
+          "biller_verification_required"
+        ]
+      }
+    }
+  ]
+}
